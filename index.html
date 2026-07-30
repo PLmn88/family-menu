@@ -25,6 +25,7 @@
       <img class="bow small" src="images/icon-bow.png" alt="" />
       <img class="bow" src="images/icon-bow.png" alt="" />
     </div>
+    <div class="sync-status sync-off" id="sync-status" title="数据同步状态">📱 本地模式</div>
   </header>
 
   <!-- 主体：左侧栏 + 主面板 -->
@@ -207,6 +208,27 @@
             <span class="card-title">设置</span>
           </div>
           <div class="card-body">
+            <!-- 家庭共享区块 -->
+            <div class="setting-section-title">🏠 家庭共享</div>
+            <div class="sync-panel" id="sync-panel">
+              <div class="sync-panel-info" id="sync-panel-info">
+                <div class="sync-panel-status">
+                  <span class="sync-dot" id="sync-dot"></span>
+                  <span id="sync-panel-text">未开启共享</span>
+                </div>
+                <div class="sync-panel-room" id="sync-panel-room"></div>
+              </div>
+              <div class="sync-panel-actions">
+                <button class="btn btn-pink" id="create-room-btn">🏠 创建家庭房间</button>
+                <button class="btn btn-ghost" id="join-room-btn">🔑 加入房间</button>
+                <button class="btn btn-ghost" id="share-room-btn" hidden>📤 分享给家人</button>
+                <button class="btn btn-ghost" id="leave-room-btn" hidden>🚪 退出房间</button>
+                <button class="btn btn-ghost" id="sync-now-btn" hidden>🔄 立即同步</button>
+              </div>
+            </div>
+
+            <!-- 原有设置项 -->
+            <div class="setting-section-title">⚙️ 个性化设置</div>
             <div class="setting-row">
               <span>👤 管家称呼</span>
               <input type="text" id="setting-name" value="家庭小管家" />
@@ -234,8 +256,9 @@
               <button class="btn btn-ghost" id="reset-data">重置全部数据</button>
             </div>
             <div class="setting-about">
-              <p>📌 FamilyMenu v1.0 · 家庭共享点菜</p>
-              <p>💕 数据存储于本机浏览器，请勿清除缓存</p>
+              <p>📌 FamilyMenu v1.1 · 家庭共享点菜</p>
+              <p>💕 创建家庭房间后，家人可通过房间号或分享链接同步数据</p>
+              <p>🔒 未开启共享时，数据保存在本机浏览器中</p>
             </div>
           </div>
         </div>
@@ -355,7 +378,27 @@
   <!-- Toast 提示 -->
   <div class="toast" id="toast"></div>
 
+  <!-- 弹窗：加入房间 -->
+  <div class="modal" id="modal-join">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🔑 加入家庭房间</h3>
+        <span class="modal-close" data-close="modal-join">×</span>
+      </div>
+      <div class="modal-body">
+        <label>请输入 6 位房间号
+          <input type="text" id="join-room-input" placeholder="例如：ABCD23" maxlength="6" style="text-transform:uppercase" />
+        </label>
+        <p style="font-size:12px;color:var(--text-3);margin-top:8px;">向创建房间的家人索取房间号，输入后即可同步共享菜单和冰箱数据。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-pink" id="confirm-join-btn">加入房间</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/app.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/preview.js"></script>
 </body>
 </html>

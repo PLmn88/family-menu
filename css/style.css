@@ -727,6 +727,22 @@ body { padding-top: var(--top-h); padding-bottom: 0; }
 .modal-body input:focus, .modal-body select:focus { border-color: var(--pink-5); }
 .img-uploader { margin-top: 4px; }
 .img-uploader input[type="text"] { margin-bottom: 6px; }
+.img-uploader input[type="file"] {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0; overflow: hidden;
+  pointer-events: none;
+}
+.form-field {
+  margin-bottom: 12px;
+}
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
 .img-preview {
   height: 80px;
   background: var(--pink-1);

@@ -210,6 +210,14 @@
           <div class="card-body">
             <!-- 家庭共享区块 -->
             <div class="setting-section-title">🏠 家庭共享</div>
+
+            <!-- GitHub Token 配置（开启共享前必须填写） -->
+            <div class="setting-row" id="github-token-row">
+              <span>🔑 GitHub Token</span>
+              <input type="password" id="setting-github-token" placeholder="ghp_..." />
+            </div>
+            <p class="setting-hint" id="token-hint">💡 开启共享前需填写 GitHub Token（只需 gist 权限）。<a href="https://github.com/settings/tokens/new?scopes=gist&description=FamilyMenu" target="_blank" style="color:var(--pink-deep)">点此创建</a></p>
+
             <div class="sync-panel" id="sync-panel">
               <div class="sync-panel-info" id="sync-panel-info">
                 <div class="sync-panel-status">

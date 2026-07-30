@@ -57,6 +57,10 @@ function loadData() {
 }
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // 如果已加入家庭房间，同步到云端
+  if (window.FamilySync && FamilySync.getRoomId()) {
+    FamilySync.syncToCloud();
+  }
 }
 let state = loadData();
 
@@ -585,6 +589,157 @@ function bindSettings() {
 }
 
 // ==========================================================
+// 家庭共享（房间管理）
+// ==========================================================
+function bindSyncEvents() {
+  // 创建房间
+  $('#create-room-btn')?.addEventListener('click', async () => {
+    if (!confirm('创建家庭房间后，当前数据将上传到云端并可供家人共享。继续？')) return;
+    toast('正在创建房间...');
+    try {
+      const roomId = await FamilySync.createRoom();
+      updateSyncPanel();
+      toast(`房间创建成功！房间号：${roomId} 🎉`);
+    } catch (e) {
+      toast('创建失败：' + e.message);
+    }
+  });
+
+  // 加入房间
+  $('#join-room-btn')?.addEventListener('click', () => {
+    $('#join-room-input').value = '';
+    openModal('modal-join');
+    setTimeout(() => $('#join-room-input').focus(), 100);
+  });
+
+  // 确认加入
+  $('#confirm-join-btn')?.addEventListener('click', async () => {
+    const roomId = $('#join-room-input').value.trim().toUpperCase();
+    if (roomId.length !== 6) {
+      toast('请输入 6 位房间号');
+      return;
+    }
+    toast('正在加入房间...');
+    try {
+      await FamilySync.joinRoom(roomId);
+      closeModal('modal-join');
+      updateSyncPanel();
+      FamilySync.refreshAll();
+      toast('已加入房间，数据已同步 🎉');
+    } catch (e) {
+      toast('加入失败：' + e.message);
+    }
+  });
+
+  // 分享房间
+  $('#share-room-btn')?.addEventListener('click', () => {
+    const roomId = FamilySync.getRoomId();
+    if (!roomId) return;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+    const shareText = `来加入我的家庭点菜房间！\n房间号：${roomId}\n或直接打开链接：\n${shareUrl}`;
+    
+    // 尝试使用 Web Share API
+    if (navigator.share) {
+      navigator.share({
+        title: '家庭共享点菜',
+        text: shareText,
+        url: shareUrl,
+      }).catch(() => {
+        // 用户取消分享，复制到剪贴板
+        copyToClipboard(shareText);
+      });
+    } else {
+      copyToClipboard(shareText);
+    }
+  });
+
+  // 退出房间
+  $('#leave-room-btn')?.addEventListener('click', () => {
+    if (!confirm('退出房间后，本机将不再同步云端数据（云端数据不受影响）。继续？')) return;
+    FamilySync.leaveRoom();
+    updateSyncPanel();
+    FamilySync.updateSyncStatus('offline');
+    toast('已退出家庭房间');
+  });
+
+  // 立即同步
+  $('#sync-now-btn')?.addEventListener('click', async () => {
+    toast('正在同步...');
+    const ok = await FamilySync.syncFromCloud();
+    toast(ok ? '同步完成 ✅' : '同步失败，请稍后重试');
+  });
+}
+
+/**
+ * 复制文本到剪贴板
+ */
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      toast('已复制到剪贴板 📋');
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    toast('已复制到剪贴板 📋');
+  } catch (e) {
+    toast('复制失败，请手动复制');
+  }
+  document.body.removeChild(ta);
+}
+
+/**
+ * 更新同步面板显示
+ */
+function updateSyncPanel() {
+  const roomId = FamilySync.getRoomId();
+  const info = $('#sync-panel-info');
+  const createBtn = $('#create-room-btn');
+  const joinBtn = $('#join-room-btn');
+  const shareBtn = $('#share-room-btn');
+  const leaveBtn = $('#leave-room-btn');
+  const syncNowBtn = $('#sync-now-btn');
+  const dot = $('#sync-dot');
+  const panelText = $('#sync-panel-text');
+  const roomDisplay = $('#sync-panel-room');
+
+  if (roomId) {
+    // 已加入房间
+    if (dot) { dot.className = 'sync-dot online'; }
+    if (panelText) panelText.textContent = '已连接家庭房间';
+    if (roomDisplay) roomDisplay.innerHTML = `房间号：<span class="room-code">${roomId}</span>`;
+    if (createBtn) createBtn.hidden = true;
+    if (joinBtn) joinBtn.hidden = true;
+    if (shareBtn) shareBtn.hidden = false;
+    if (leaveBtn) leaveBtn.hidden = false;
+    if (syncNowBtn) syncNowBtn.hidden = false;
+  } else {
+    // 未加入房间
+    if (dot) { dot.className = 'sync-dot offline'; }
+    if (panelText) panelText.textContent = '未开启共享（本地模式）';
+    if (roomDisplay) roomDisplay.innerHTML = '<small>创建房间后，家人可通过房间号或链接同步数据</small>';
+    if (createBtn) createBtn.hidden = false;
+    if (joinBtn) joinBtn.hidden = false;
+    if (shareBtn) shareBtn.hidden = true;
+    if (leaveBtn) leaveBtn.hidden = true;
+    if (syncNowBtn) syncNowBtn.hidden = true;
+  }
+}
+
+// ==========================================================
 // 顶部：问候语、日期、用户名
 // ==========================================================
 function updateGreeting() {
@@ -646,6 +801,8 @@ function init() {
   memberUploader = bindImageUploader('member-avatar-file', 'member-avatar-url', 'member-avatar-preview');
   bindEvents();
   bindSettings();
+  bindSyncEvents();
+  updateSyncPanel();
   updateGreeting();
   updateDate();
   updateHeader();
@@ -657,5 +814,9 @@ function init() {
   setTimeout(checkExpiryBanner, 500);
   // 每分钟刷新问候语
   setInterval(() => { updateGreeting(); updateDate(); }, 60000);
+  // 初始化云端同步
+  if (window.FamilySync) {
+    FamilySync.initSync();
+  }
 }
 document.addEventListener('DOMContentLoaded', init);

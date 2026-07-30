@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FFE4E9" />
+  <title>家庭共享点菜 · FamilyMenu</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="images/icon-heart.png" type="image/png" />
+  <link rel="apple-touch-icon" href="images/icon-heart.png" />
+</head>
+<body>
+  <!-- 顶部欢迎条（参考小红书"15:02 + 用户名"风格） -->
+  <header class="top-bar">
+    <div class="bows">
+      <img class="bow" src="images/icon-bow.png" alt="" />
+      <img class="bow small" src="images/icon-bow.png" alt="" />
+      <img class="bow" src="images/icon-bow.png" alt="" />
+    </div>
+    <div class="top-title-wrap">
+      <div class="top-title">家庭共享点菜</div>
+      <div class="greet-pill" id="greet-pill">下午好，宝贝～</div>
+    </div>
+    <div class="bows">
+      <img class="bow small" src="images/icon-bow.png" alt="" />
+      <img class="bow" src="images/icon-bow.png" alt="" />
+    </div>
+  </header>
+
+  <!-- 主体：左侧栏 + 主面板 -->
+  <div class="app-shell">
+    <!-- 左侧侧边栏（参考图：圆角小图标 + 文字） -->
+    <aside class="sidebar">
+      <div class="side-user">
+        <div class="side-avatar">
+          <img src="images/icon-heart.png" alt="管家" />
+        </div>
+        <div class="side-username">FamilyMenu</div>
+      </div>
+
+      <nav class="side-nav">
+        <button class="side-item active" data-target="page-menu" data-img="icon-bow">
+          <span class="side-icon"><img src="images/icon-bow.png" alt="" /></span>
+          <span class="side-text">今日点菜</span>
+        </button>
+        <button class="side-item" data-target="page-family" data-img="icon-friend">
+          <span class="side-icon"><img src="images/icon-friend.png" alt="" /></span>
+          <span class="side-text">家庭成员</span>
+        </button>
+        <button class="side-item" data-target="page-fridge" data-img="icon-cloud">
+          <span class="side-icon"><img src="images/icon-cloud.png" alt="" /></span>
+          <span class="side-text">我的冰箱</span>
+        </button>
+        <button class="side-item" data-target="page-report" data-img="icon-piano">
+          <span class="side-icon"><img src="images/icon-piano.png" alt="" /></span>
+          <span class="side-text">月度汇总</span>
+        </button>
+        <button class="side-item" data-target="page-settings" data-img="icon-heart">
+          <span class="side-icon"><img src="images/icon-heart.png" alt="" /></span>
+          <span class="side-text">设置</span>
+        </button>
+      </nav>
+
+      <div class="side-footer">
+        <div class="side-date" id="side-date">2026/07/30</div>
+        <div class="side-motto">💕 好好吃饭</div>
+      </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-pane">
+      <!-- 顶部装饰条：用户头像 + 欢迎语（参考图） -->
+      <div class="user-header">
+        <div class="user-avatar">
+          <img src="images/icon-heart.png" alt="我" />
+        </div>
+        <div class="user-info">
+          <div class="user-name">家庭小管家 <span class="user-tag">v1.0</span></div>
+          <div class="user-quote">今天想吃点什么呢？</div>
+        </div>
+        <div class="greet-pill right" id="greet-pill-2">下午好，宝贝～</div>
+      </div>
+
+      <!-- 到期预警横幅（打开 App 时自动展示） -->
+      <div class="expiry-banner" id="expiry-banner" hidden>
+        <div class="banner-icon">⚠️</div>
+        <div class="banner-body">
+          <div class="banner-title" id="banner-title">冰箱预警</div>
+          <div class="banner-detail" id="banner-detail"></div>
+        </div>
+        <button class="banner-close" id="banner-close" aria-label="关闭">×</button>
+      </div>
+
+      <!-- 1. 今日点菜 -->
+      <section class="page active" id="page-menu">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🍽️</span>
+            <span class="card-title">今日点菜</span>
+            <span class="card-sub" id="today-meal-sub">午餐</span>
+          </div>
+          <div class="card-body">
+            <div class="meal-switch">
+              <button class="meal-btn" data-meal="breakfast">🌅 早餐</button>
+              <button class="meal-btn active" data-meal="lunch">🌞 午餐</button>
+              <button class="meal-btn" data-meal="dinner">🌙 晚餐</button>
+            </div>
+            <div class="category-bar">
+              <button class="cat-btn active" data-cat="all">全部</button>
+              <button class="cat-btn" data-cat="meat">🥩 荤菜</button>
+              <button class="cat-btn" data-cat="veg">🥗 素菜</button>
+              <button class="cat-btn" data-cat="soup">🍲 汤品</button>
+              <button class="cat-btn" data-cat="staple">🍚 主食</button>
+              <button class="cat-btn" data-cat="dessert">🍰 甜点</button>
+            </div>
+            <div class="dish-list" id="dish-list"></div>
+            <button class="add-row-btn" id="add-dish-btn">＋ 添加菜品</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. 家庭成员 -->
+      <section class="page" id="page-family">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">👨‍👩‍👧</span>
+            <span class="card-title">家庭成员</span>
+            <span class="card-sub" id="member-count">3 位成员</span>
+          </div>
+          <div class="card-body">
+            <div class="member-grid" id="member-grid"></div>
+            <button class="add-row-btn" id="add-member-btn">＋ 添加成员</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 冰箱 -->
+      <section class="page" id="page-fridge">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🧊</span>
+            <span class="card-title">我的冰箱</span>
+            <span class="card-sub" id="fridge-count">5 件食材</span>
+          </div>
+          <div class="card-body">
+            <div class="category-bar">
+              <button class="cat-btn active" data-fridge="all">全部</button>
+              <button class="cat-btn" data-fridge="veg">🥬 蔬菜</button>
+              <button class="cat-btn" data-fridge="fruit">🍎 水果</button>
+              <button class="cat-btn" data-fridge="meat">🥩 肉蛋</button>
+              <button class="cat-btn" data-fridge="dairy">🥛 乳制品</button>
+              <button class="cat-btn" data-fridge="other">📦 其他</button>
+            </div>
+            <div class="fridge-list" id="fridge-list"></div>
+            <button class="add-row-btn" id="add-fridge-btn">＋ 添加食材</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 月度汇总 -->
+      <section class="page" id="page-report">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <span class="card-title">月度汇总</span>
+            <div class="month-picker">
+              <button class="month-nav" id="prev-month">◀</button>
+              <span id="current-month">2026-07</span>
+              <button class="month-nav" id="next-month">▶</button>
+            </div>
+          </div>
+          <div class="card-body" id="report-card">
+            <div class="report-section">
+              <h3>💰 金额汇总</h3>
+              <div class="big-number" id="total-amount">¥0.00</div>
+              <div class="sub-line">
+                <span>已点菜品：<b id="total-dishes">0</b> 道</span>
+                <span>平均每道：<b id="avg-amount">¥0.00</b></span>
+              </div>
+            </div>
+            <div class="report-section">
+              <h3>⭐ 好评 TOP 5</h3>
+              <ol class="top-list" id="top-dishes"></ol>
+            </div>
+            <div class="report-section">
+              <h3>👨‍👩‍👧 成员贡献</h3>
+              <ul class="member-rank" id="member-rank"></ul>
+            </div>
+            <div class="report-section payment-section">
+              <h3>💝 收款 / 报销</h3>
+              <p class="hint">扫一扫下方二维码，向我转账 / 报销本月餐费</p>
+              <div class="qr-box" id="qr-box">
+                <img src="images/qrcode.jpg" alt="收款二维码" />
+              </div>
+              <div class="qr-caption">长按或扫描识别二维码</div>
+            </div>
+            <button class="add-row-btn" id="export-btn">📤 导出月报图片</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. 设置 -->
+      <section class="page" id="page-settings">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">⚙️</span>
+            <span class="card-title">设置</span>
+          </div>
+          <div class="card-body">
+            <div class="setting-row">
+              <span>👤 管家称呼</span>
+              <input type="text" id="setting-name" value="家庭小管家" />
+            </div>
+            <div class="setting-row">
+              <span>💬 问候语</span>
+              <input type="text" id="setting-greet" value="下午好，宝贝～" />
+            </div>
+            <div class="setting-row">
+              <span>🎨 主题风格</span>
+              <select id="setting-theme">
+                <option value="pink">粉嫩甜美（默认）</option>
+                <option value="blue">婴儿蓝（清新）</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <span>🔔 到期提醒</span>
+              <label class="switch">
+                <input type="checkbox" id="setting-notify" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="setting-actions">
+              <button class="btn btn-pink" id="save-settings">保存设置</button>
+              <button class="btn btn-ghost" id="reset-data">重置全部数据</button>
+            </div>
+            <div class="setting-about">
+              <p>📌 FamilyMenu v1.0 · 家庭共享点菜</p>
+              <p>💕 数据存储于本机浏览器，请勿清除缓存</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 移动端底部 Tab 栏（窄屏显示） -->
+  <nav class="tab-bar">
+    <button class="tab active" data-target="page-menu">
+      <span class="tab-icon"><img src="images/icon-bow.png" alt="" /></span>
+      <span class="tab-text">点菜</span>
+    </button>
+    <button class="tab" data-target="page-family">
+      <span class="tab-icon"><img src="images/icon-friend.png" alt="" /></span>
+      <span class="tab-text">成员</span>
+    </button>
+    <button class="tab" data-target="page-fridge">
+      <span class="tab-icon"><img src="images/icon-cloud.png" alt="" /></span>
+      <span class="tab-text">冰箱</span>
+    </button>
+    <button class="tab" data-target="page-report">
+      <span class="tab-icon"><img src="images/icon-piano.png" alt="" /></span>
+      <span class="tab-text">月报</span>
+    </button>
+    <button class="tab" data-target="page-settings">
+      <span class="tab-icon"><img src="images/icon-heart.png" alt="" /></span>
+      <span class="tab-text">设置</span>
+    </button>
+  </nav>
+
+  <!-- 弹窗：添加菜品 -->
+  <div class="modal" id="modal-dish">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>添加菜品</h3>
+        <span class="modal-close" data-close="modal-dish">×</span>
+      </div>
+      <div class="modal-body">
+        <label>菜品名称<input type="text" id="dish-name" placeholder="例如：番茄炒蛋" /></label>
+        <label>所属分类
+          <select id="dish-cat">
+            <option value="meat">🥩 荤菜</option>
+            <option value="veg">🥗 素菜</option>
+            <option value="soup">🍲 汤品</option>
+            <option value="staple">🍚 主食</option>
+            <option value="dessert">🍰 甜点</option>
+          </select>
+        </label>
+        <label>金额 (元)<input type="number" id="dish-price" step="0.01" min="0" placeholder="0.00" /></label>
+        <label>菜品图片
+          <div class="img-uploader">
+            <input type="file" id="dish-img-file" accept="image/*" hidden />
+            <input type="text" id="dish-img-url" placeholder="或粘贴图片网址 https://..." />
+            <div class="img-preview" id="dish-img-preview">点击选择图片</div>
+          </div>
+        </label>
+        <label>备注<input type="text" id="dish-note" placeholder="可选" /></label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-pink" id="save-dish">保存菜品</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：添加成员 -->
+  <div class="modal" id="modal-member">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>添加家庭成员</h3>
+        <span class="modal-close" data-close="modal-member">×</span>
+      </div>
+      <div class="modal-body">
+        <label>称呼 / 昵称<input type="text" id="member-name" placeholder="例如：妈妈" /></label>
+        <label>头像
+          <div class="img-uploader">
+            <input type="file" id="member-avatar-file" accept="image/*" hidden />
+            <input type="text" id="member-avatar-url" placeholder="或粘贴头像网址 https://..." />
+            <div class="img-preview round" id="member-avatar-preview">点击选择头像</div>
+          </div>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-pink" id="save-member">保存成员</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：添加冰箱食材 -->
+  <div class="modal" id="modal-fridge">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>添加食材</h3>
+        <span class="modal-close" data-close="modal-fridge">×</span>
+      </div>
+      <div class="modal-body">
+        <label>食材名称<input type="text" id="fridge-name" placeholder="例如：鸡蛋" /></label>
+        <label>分类
+          <select id="fridge-cat">
+            <option value="veg">🥬 蔬菜</option>
+            <option value="fruit">🍎 水果</option>
+            <option value="meat">🥩 肉蛋</option>
+            <option value="dairy">🥛 乳制品</option>
+            <option value="other">📦 其他</option>
+          </select>
+        </label>
+        <label>数量<input type="text" id="fridge-qty" placeholder="例如：10 个 / 500g" /></label>
+        <label>购买金额 (元)<input type="number" id="fridge-price" step="0.01" min="0" placeholder="0.00" /></label>
+        <label>到期时间<input type="date" id="fridge-expire" /></label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-pink" id="save-fridge">保存食材</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/preview.js"></script>
+</body>
+</html>

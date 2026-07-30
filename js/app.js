@@ -277,25 +277,63 @@ function bindImageUploader(fileInputId, urlInputId, previewId) {
   function setPreview(src) {
     currentSrc = src;
     if (src) {
-      preview.style.backgroundImage = `url('${src}')`;
+      preview.style.backgroundImage = `url("${src}")`;
       preview.textContent = '';
     } else {
       preview.style.backgroundImage = '';
       preview.textContent = preview.classList.contains('round') ? '点击选择头像' : '点击选择图片';
     }
   }
-  preview.addEventListener('click', () => fileInput.click());
+
+  // 点击预览区域 → 打开文件选择器
+  preview.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  // 文件选择 → 读取为 base64
   fileInput.addEventListener('change', e => {
-    const f = e.target.files[0];
+    const f = e.target.files && e.target.files[0];
     if (!f) return;
+    // 限制文件大小（5MB）
+    if (f.size > 5 * 1024 * 1024) {
+      toast('图片不能超过 5MB');
+      fileInput.value = '';
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = ev => setPreview(ev.target.result);
+    reader.onload = ev => {
+      if (ev.target.result) {
+        setPreview(ev.target.result);
+        // 清空 URL 输入（以文件为准）
+        urlInput.value = '';
+      }
+    };
+    reader.onerror = () => toast('图片读取失败，请重试');
     reader.readAsDataURL(f);
   });
+
+  // URL 输入 → 直接使用 URL
   urlInput.addEventListener('input', e => {
-    if (e.target.value) setPreview(e.target.value);
+    const val = e.target.value.trim();
+    if (val) setPreview(val);
   });
-  return { getSrc: () => currentSrc, reset: () => { setPreview(''); fileInput.value = ''; urlInput.value = ''; } };
+  urlInput.addEventListener('blur', e => {
+    const val = e.target.value.trim();
+    if (val && !currentSrc) {
+      setPreview(val);
+    }
+  });
+
+  return {
+    getSrc: () => currentSrc,
+    reset: () => {
+      setPreview('');
+      fileInput.value = '';
+      urlInput.value = '';
+    }
+  };
 }
 
 let dishUploader, memberUploader;

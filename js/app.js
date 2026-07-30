@@ -57,9 +57,9 @@ function loadData() {
 }
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  // 如果已加入家庭房间，同步到云端
-  if (window.FamilySync && FamilySync.getRoomId()) {
-    FamilySync.syncToCloud();
+  // 如果已登录家庭云，同步到云端
+  if (window.FamilyCloud && FamilyCloud.isLoggedIn()) {
+    FamilyCloud.syncToCloud();
   }
 }
 let state = loadData();
@@ -560,11 +560,6 @@ function renderSettings() {
   $('#setting-greet').value = state.settings.greet || '';
   $('#setting-theme').value = state.settings.theme || 'pink';
   $('#setting-notify').checked = !!state.settings.notify;
-  // 加载已保存的 GitHub Token
-  const tokenInput = $('#setting-github-token');
-  if (tokenInput) {
-    tokenInput.value = localStorage.getItem('familyMenuGitHubToken') || '';
-  }
 }
 
 function bindSettings() {
@@ -594,162 +589,78 @@ function bindSettings() {
 }
 
 // ==========================================================
-// 家庭共享（房间管理）
+// 家庭云（账号管理）
 // ==========================================================
 function bindSyncEvents() {
-  // GitHub Token 保存（失焦时自动保存）
-  $('#setting-github-token')?.addEventListener('blur', () => {
-    const token = $('#setting-github-token').value.trim();
-    if (token) {
-      localStorage.setItem('familyMenuGitHubToken', token);
-      toast('Token 已保存 🔑');
-    }
-  });
+  // 注册
+  $('#signup-btn')?.addEventListener('click', async () => {
+    const email = $('#account-email').value.trim();
+    const password = $('#account-password').value;
+    if (!email || !password) { toast('请填写邮箱和密码'); return; }
+    if (!email.includes('@')) { toast('请输入有效的邮箱'); return; }
+    if (password.length < 6) { toast('密码至少 6 位'); return; }
 
-  // 创建房间
-  $('#create-room-btn')?.addEventListener('click', async () => {
-    if (!confirm('创建家庭房间后，当前数据将上传到云端并可供家人共享。继续？')) return;
-    toast('正在创建房间...');
+    toast('正在注册...');
     try {
-      const roomId = await FamilySync.createRoom();
-      updateSyncPanel();
-      toast(`房间创建成功！房间号：${roomId} 🎉`);
+      await FamilyCloud.signUp(email, password);
+      updateAccountPanel();
+      FamilyCloud.refreshAll();
+      toast('注册成功！数据已上传到家庭云 🎉');
     } catch (e) {
-      toast('创建失败：' + e.message);
+      toast(e.message);
     }
   });
 
-  // 加入房间
-  $('#join-room-btn')?.addEventListener('click', () => {
-    $('#join-room-input').value = '';
-    openModal('modal-join');
-    setTimeout(() => $('#join-room-input').focus(), 100);
-  });
+  // 登录
+  $('#signin-btn')?.addEventListener('click', async () => {
+    const email = $('#account-email').value.trim();
+    const password = $('#account-password').value;
+    if (!email || !password) { toast('请填写邮箱和密码'); return; }
 
-  // 确认加入
-  $('#confirm-join-btn')?.addEventListener('click', async () => {
-    const roomId = $('#join-room-input').value.trim().toUpperCase();
-    if (roomId.length !== 6) {
-      toast('请输入 6 位房间号');
-      return;
-    }
-    toast('正在加入房间...');
+    toast('正在登录...');
     try {
-      await FamilySync.joinRoom(roomId);
-      closeModal('modal-join');
-      updateSyncPanel();
-      FamilySync.refreshAll();
-      toast('已加入房间，数据已同步 🎉');
+      await FamilyCloud.signIn(email, password);
+      updateAccountPanel();
+      FamilyCloud.refreshAll();
+      toast('登录成功！数据已同步 🎉');
     } catch (e) {
-      toast('加入失败：' + e.message);
+      toast(e.message);
     }
   });
 
-  // 分享房间
-  $('#share-room-btn')?.addEventListener('click', () => {
-    const roomId = FamilySync.getRoomId();
-    if (!roomId) return;
-    const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
-    const shareText = `来加入我的家庭点菜房间！\n房间号：${roomId}\n或直接打开链接：\n${shareUrl}`;
-    
-    // 尝试使用 Web Share API
-    if (navigator.share) {
-      navigator.share({
-        title: '家庭共享点菜',
-        text: shareText,
-        url: shareUrl,
-      }).catch(() => {
-        // 用户取消分享，复制到剪贴板
-        copyToClipboard(shareText);
-      });
-    } else {
-      copyToClipboard(shareText);
-    }
-  });
-
-  // 退出房间
-  $('#leave-room-btn')?.addEventListener('click', () => {
-    if (!confirm('退出房间后，本机将不再同步云端数据（云端数据不受影响）。继续？')) return;
-    FamilySync.leaveRoom();
-    updateSyncPanel();
-    FamilySync.updateSyncStatus('offline');
-    toast('已退出家庭房间');
+  // 退出登录
+  $('#signout-btn')?.addEventListener('click', () => {
+    if (!confirm('退出登录后，本机数据将不再同步云端（云端数据不受影响）。继续？')) return;
+    FamilyCloud.signOut();
+    updateAccountPanel();
+    toast('已退出登录');
   });
 
   // 立即同步
   $('#sync-now-btn')?.addEventListener('click', async () => {
     toast('正在同步...');
-    const ok = await FamilySync.syncFromCloud();
+    const ok = await FamilyCloud.syncFromCloud();
     toast(ok ? '同步完成 ✅' : '同步失败，请稍后重试');
   });
 }
 
 /**
- * 复制文本到剪贴板
+ * 更新账号面板显示
  */
-function copyToClipboard(text) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => {
-      toast('已复制到剪贴板 📋');
-    }).catch(() => {
-      fallbackCopy(text);
-    });
+function updateAccountPanel() {
+  const loggedIn = FamilyCloud.isLoggedIn();
+  const panelLogout = $('#account-panel-logout');
+  const panelLogin = $('#account-panel-login');
+  const emailDisplay = $('#account-email-display');
+
+  if (loggedIn) {
+    if (panelLogout) panelLogout.hidden = true;
+    if (panelLogin) panelLogin.hidden = false;
+    const user = FamilyCloud.getCloudUser();
+    if (emailDisplay) emailDisplay.textContent = '👤 ' + (user.email || '已登录');
   } else {
-    fallbackCopy(text);
-  }
-}
-
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  try {
-    document.execCommand('copy');
-    toast('已复制到剪贴板 📋');
-  } catch (e) {
-    toast('复制失败，请手动复制');
-  }
-  document.body.removeChild(ta);
-}
-
-/**
- * 更新同步面板显示
- */
-function updateSyncPanel() {
-  const roomId = FamilySync.getRoomId();
-  const info = $('#sync-panel-info');
-  const createBtn = $('#create-room-btn');
-  const joinBtn = $('#join-room-btn');
-  const shareBtn = $('#share-room-btn');
-  const leaveBtn = $('#leave-room-btn');
-  const syncNowBtn = $('#sync-now-btn');
-  const dot = $('#sync-dot');
-  const panelText = $('#sync-panel-text');
-  const roomDisplay = $('#sync-panel-room');
-
-  if (roomId) {
-    // 已加入房间
-    if (dot) { dot.className = 'sync-dot online'; }
-    if (panelText) panelText.textContent = '已连接家庭房间';
-    if (roomDisplay) roomDisplay.innerHTML = `房间号：<span class="room-code">${roomId}</span>`;
-    if (createBtn) createBtn.hidden = true;
-    if (joinBtn) joinBtn.hidden = true;
-    if (shareBtn) shareBtn.hidden = false;
-    if (leaveBtn) leaveBtn.hidden = false;
-    if (syncNowBtn) syncNowBtn.hidden = false;
-  } else {
-    // 未加入房间
-    if (dot) { dot.className = 'sync-dot offline'; }
-    if (panelText) panelText.textContent = '未开启共享（本地模式）';
-    if (roomDisplay) roomDisplay.innerHTML = '<small>创建房间后，家人可通过房间号或链接同步数据</small>';
-    if (createBtn) createBtn.hidden = false;
-    if (joinBtn) joinBtn.hidden = false;
-    if (shareBtn) shareBtn.hidden = true;
-    if (leaveBtn) leaveBtn.hidden = true;
-    if (syncNowBtn) syncNowBtn.hidden = true;
+    if (panelLogout) panelLogout.hidden = false;
+    if (panelLogin) panelLogin.hidden = true;
   }
 }
 
@@ -816,7 +727,7 @@ function init() {
   bindEvents();
   bindSettings();
   bindSyncEvents();
-  updateSyncPanel();
+  updateAccountPanel();
   updateGreeting();
   updateDate();
   updateHeader();
@@ -828,9 +739,9 @@ function init() {
   setTimeout(checkExpiryBanner, 500);
   // 每分钟刷新问候语
   setInterval(() => { updateGreeting(); updateDate(); }, 60000);
-  // 初始化云端同步
-  if (window.FamilySync) {
-    FamilySync.initSync();
+  // 初始化家庭云同步
+  if (window.FamilyCloud) {
+    FamilyCloud.initCloud();
   }
 }
 document.addEventListener('DOMContentLoaded', init);

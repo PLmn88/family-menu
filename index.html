@@ -211,27 +211,35 @@
             <!-- 家庭共享区块 -->
             <div class="setting-section-title">🏠 家庭共享</div>
 
-            <!-- GitHub Token 配置（开启共享前必须填写） -->
-            <div class="setting-row" id="github-token-row">
-              <span>🔑 GitHub Token</span>
-              <input type="password" id="setting-github-token" placeholder="ghp_..." />
-            </div>
-            <p class="setting-hint" id="token-hint">💡 开启共享前需填写 GitHub Token（只需 gist 权限）。<a href="https://github.com/settings/tokens/new?scopes=gist&description=FamilyMenu" target="_blank" style="color:var(--pink-deep)">点此创建</a></p>
-
-            <div class="sync-panel" id="sync-panel">
-              <div class="sync-panel-info" id="sync-panel-info">
-                <div class="sync-panel-status">
-                  <span class="sync-dot" id="sync-dot"></span>
-                  <span id="sync-panel-text">未开启共享</span>
-                </div>
-                <div class="sync-panel-room" id="sync-panel-room"></div>
+            <!-- 未登录状态：账号密码输入 -->
+            <div class="account-panel" id="account-panel-logout">
+              <p class="account-hint">🔑 输入邮箱和密码，全家人共享同一份菜单和冰箱数据</p>
+              <div class="setting-row">
+                <span>📧 邮箱</span>
+                <input type="email" id="account-email" placeholder="family@example.com" />
               </div>
-              <div class="sync-panel-actions">
-                <button class="btn btn-pink" id="create-room-btn">🏠 创建家庭房间</button>
-                <button class="btn btn-ghost" id="join-room-btn">🔑 加入房间</button>
-                <button class="btn btn-ghost" id="share-room-btn" hidden>📤 分享给家人</button>
-                <button class="btn btn-ghost" id="leave-room-btn" hidden>🚪 退出房间</button>
-                <button class="btn btn-ghost" id="sync-now-btn" hidden>🔄 立即同步</button>
+              <div class="setting-row">
+                <span>🔒 密码</span>
+                <input type="password" id="account-password" placeholder="至少 6 位" />
+              </div>
+              <div class="account-actions">
+                <button class="btn btn-pink" id="signup-btn">📝 注册新账号</button>
+                <button class="btn btn-ghost" id="signin-btn">🔑 登录已有账号</button>
+              </div>
+            </div>
+
+            <!-- 已登录状态：账号信息 -->
+            <div class="account-panel" id="account-panel-login" hidden>
+              <div class="account-info">
+                <div class="account-email" id="account-email-display"></div>
+                <div class="account-status">
+                  <span class="sync-dot online"></span>
+                  <span>已连接家庭云</span>
+                </div>
+              </div>
+              <div class="account-actions">
+                <button class="btn btn-ghost" id="sync-now-btn">🔄 立即同步</button>
+                <button class="btn btn-ghost" id="signout-btn">🚪 退出登录</button>
               </div>
             </div>
 
@@ -264,9 +272,9 @@
               <button class="btn btn-ghost" id="reset-data">重置全部数据</button>
             </div>
             <div class="setting-about">
-              <p>📌 FamilyMenu v1.1 · 家庭共享点菜</p>
-              <p>💕 创建家庭房间后，家人可通过房间号或分享链接同步数据</p>
-              <p>🔒 未开启共享时，数据保存在本机浏览器中</p>
+              <p>📌 FamilyMenu v1.2 · 家庭共享点菜</p>
+              <p>💕 注册账号后，家人用同一邮箱密码登录即可共享数据</p>
+              <p>🔒 未登录时数据保存在本机浏览器中</p>
             </div>
           </div>
         </div>
@@ -386,27 +394,8 @@
   <!-- Toast 提示 -->
   <div class="toast" id="toast"></div>
 
-  <!-- 弹窗：加入房间 -->
-  <div class="modal" id="modal-join">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>🔑 加入家庭房间</h3>
-        <span class="modal-close" data-close="modal-join">×</span>
-      </div>
-      <div class="modal-body">
-        <label>请输入 6 位房间号
-          <input type="text" id="join-room-input" placeholder="例如：ABCD23" maxlength="6" style="text-transform:uppercase" />
-        </label>
-        <p style="font-size:12px;color:var(--text-3);margin-top:8px;">向创建房间的家人索取房间号，输入后即可同步共享菜单和冰箱数据。</p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-pink" id="confirm-join-btn">加入房间</button>
-      </div>
-    </div>
-  </div>
-
   <script src="js/app.js"></script>
-  <script src="js/sync.js"></script>
+  <script src="js/cloud.js"></script>
   <script src="js/preview.js"></script>
 </body>
 </html>

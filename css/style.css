@@ -803,6 +803,12 @@ body { padding-top: var(--top-h); padding-bottom: 0; }
 .setting-section-title:first-child {
   margin-top: 0;
 }
+.setting-hint {
+  font-size: 11px;
+  color: var(--text-3);
+  margin: 4px 0 12px;
+  line-height: 1.5;
+}
 
 /* 家庭共享面板 */
 .sync-panel {

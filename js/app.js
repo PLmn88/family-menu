@@ -560,6 +560,11 @@ function renderSettings() {
   $('#setting-greet').value = state.settings.greet || '';
   $('#setting-theme').value = state.settings.theme || 'pink';
   $('#setting-notify').checked = !!state.settings.notify;
+  // 加载已保存的 GitHub Token
+  const tokenInput = $('#setting-github-token');
+  if (tokenInput) {
+    tokenInput.value = localStorage.getItem('familyMenuGitHubToken') || '';
+  }
 }
 
 function bindSettings() {
@@ -592,6 +597,15 @@ function bindSettings() {
 // 家庭共享（房间管理）
 // ==========================================================
 function bindSyncEvents() {
+  // GitHub Token 保存（失焦时自动保存）
+  $('#setting-github-token')?.addEventListener('blur', () => {
+    const token = $('#setting-github-token').value.trim();
+    if (token) {
+      localStorage.setItem('familyMenuGitHubToken', token);
+      toast('Token 已保存 🔑');
+    }
+  });
+
   // 创建房间
   $('#create-room-btn')?.addEventListener('click', async () => {
     if (!confirm('创建家庭房间后，当前数据将上传到云端并可供家人共享。继续？')) return;

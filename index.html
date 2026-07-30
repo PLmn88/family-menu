@@ -325,13 +325,14 @@
           </select>
         </label>
         <label>金额 (元)<input type="number" id="dish-price" step="0.01" min="0" placeholder="0.00" /></label>
-        <label>菜品图片
+        <div class="form-field">
+          <span class="form-label">菜品图片</span>
           <div class="img-uploader">
-            <input type="file" id="dish-img-file" accept="image/*" hidden />
+            <input type="file" id="dish-img-file" accept="image/*" />
             <input type="text" id="dish-img-url" placeholder="或粘贴图片网址 https://..." />
             <div class="img-preview" id="dish-img-preview">点击选择图片</div>
           </div>
-        </label>
+        </div>
         <label>备注<input type="text" id="dish-note" placeholder="可选" /></label>
       </div>
       <div class="modal-footer">
@@ -349,13 +350,14 @@
       </div>
       <div class="modal-body">
         <label>称呼 / 昵称<input type="text" id="member-name" placeholder="例如：妈妈" /></label>
-        <label>头像
+        <div class="form-field">
+          <span class="form-label">头像</span>
           <div class="img-uploader">
-            <input type="file" id="member-avatar-file" accept="image/*" hidden />
+            <input type="file" id="member-avatar-file" accept="image/*" />
             <input type="text" id="member-avatar-url" placeholder="或粘贴头像网址 https://..." />
             <div class="img-preview round" id="member-avatar-preview">点击选择头像</div>
           </div>
-        </label>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-pink" id="save-member">保存成员</button>
